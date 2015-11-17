@@ -42,14 +42,6 @@ class ClusterHashtags{
      */
     protected $metanodes;
 
-
-
-
-
-
-
-
-
     /**
      * Set nid
      *

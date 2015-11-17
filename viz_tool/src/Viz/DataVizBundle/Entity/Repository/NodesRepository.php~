@@ -30,6 +30,8 @@ class NodesRepository extends EntityRepository
         $nodes=array();
         foreach($n as $node){
             $attributes['degree']=$node['degree'];
+        //    $attributes['rtw']=$node['rtw'];
+   //         $attributes['retweets']=$node['retweets'];
             $m= $this->getEntityManager()->getRepository('VizDataVizBundle:TweetText')
                 ->getTweetText($node['nid']);
             $rt= $this->getEntityManager()->getRepository('VizDataVizBundle:Retweets')
@@ -78,6 +80,8 @@ class NodesRepository extends EntityRepository
         foreach($htn as $node){
 
             $attributes['degree']=$node['degree'];
+    //        $attributes['rtw']=$node['rtw'];
+  //          $attributes['retweets']=$node['retweets'];
             $m= $this->getEntityManager()->getRepository('VizDataVizBundle:TweetText')
                 ->getTweetText($node['nid']);
             $rt= $this->getEntityManager()->getRepository('VizDataVizBundle:Retweets')

@@ -17,6 +17,8 @@
 
 
     function init() {
+        // var r={{metadata.nodes|json_encode|raw}};
+        //    alert(r.toSource());
         var sigInst = sigma.init($('#sigma-example')[0]).drawingProperties({
             defaultLabelColor: '#000',
             edgeColor: 'target',
@@ -32,7 +34,13 @@
         sigInst.parseJson({{ metadata|json_encode|raw }});
 
         sigInst.draw();
+
+    //    alert(sigInst.getEdgesCount());
+
         var wer={{metadata.flag|raw}};
+
+
+
         if(wer==22){
             document.getElementById('c').hidden=false;
             document.getElementById('time').hidden=false;
@@ -209,12 +217,18 @@
         var str;
 
         function onClick(downnodes){
+            /*  if(running){
+             sigInst.stopForceAtlas2();
+             sigInst.draw();
+             }*/
             wer=33;
+
             document.getElementById('c').hidden=false;
             document.getElementById('time').hidden=false;
             document.getElementById('e').hidden=false;
             sigInst.iterNodes(function(n){
                 var id= n.id;
+                //  str=cluster(id);
                 $.ajax({
                     type: "POST",
 
@@ -228,6 +242,8 @@
                         sigInst.draw();
                         sigInst.iterNodes(function(n){
                             var    ar=getRetweetsPerNode(n.id);
+
+                            //    alert(n.label+ "has"+ar+"retweets" );
                         });
                         var maximum;
                         var minimum;
@@ -553,8 +569,19 @@
 
         };
         sigInst.bind('overnodes',checkForceAtlas);
+        /*     (function(){
 
-        function getEdgesArray(){     /// neighbors of the meta-graph
+         var v=$('#force-atlas').val();
+         if(running){
+         /* if(v=='Stop random'){
+         document.getElementById('force-atlas').childNodes[0].nodeValue ='Start random ';
+
+         }
+         alert("grg");
+         }
+         })();**/
+
+        function getEdgesArray(){     /// neighbors sto metagrafo
             var ar=[];
             sigInst.iterNodes(function(n){
                 var neigh=findNeighbors(n.id);
@@ -595,6 +622,7 @@
             ar = ar.filter( function( item, index, inputArray ) {
                 return inputArray.indexOf(item) == index;
             });
+            ///   alert(JSON.stringify(ar));
             return ar;
 
         }
@@ -607,7 +635,7 @@
             var flag=false;
             var neighbors = {};
             sigInst.iterEdges(function(e){
-                if (sigInst.getNodes(e.source).size %1===0){ //cluster or meta-graph?
+                if (sigInst.getNodes(e.source).size %1===0){ //vlepw an eimai sto metagrafo i se mesa sto cluster
                     var id1=sigInst.getNodes(e.source).id;
                     var size1=findNeighbors(id1);
                     var  id2=sigInst.getNodes(e.target).id;
@@ -671,12 +699,14 @@
 
 
             var newnodes=[];
+            //alert(JSON.stringify(temporalEdgesArray));
             for(var i=0; i<temporalEdgesArray.length; i++){
                 if(temporalEdgesArray[i].neigh==edgeNum ){
                     newnodes.push(temporalEdgesArray[i].id);
 
                 }
             }
+            //  alert(temporalEdgesArray[i].neigh);
             var neighbors={};
             sigInst.iterEdges(function(e){
                 if(!e.hidden){
@@ -723,6 +753,7 @@
             $( "#edamount" ).val(  $( "#edslider" ).slider( "value" ) );
             var s='n';
             var flag;
+            //  var nodeNum=this.value;
             var a=[];
             a=sortNodes();
             var ar= [];
@@ -733,6 +764,8 @@
             sigInst.iterEdges(function(e){
                 var flag=false;
                 if(ar.indexOf(e.source)<0 && ar.indexOf(e.target)<0){
+                    //  e.hidden=1;
+
                     neighbors[e.source]=1;
                     neighbors[e.target]=1;
                 }
@@ -745,6 +778,8 @@
             }).iterNodes(function(n){
                         if(!neighbors[n.id]){
                             n.hidden =0;
+
+                            //    alert("found");
                             coloredNodeId.map(function(m){
                                 if(m== n.id){
                                     n.color='#f00';}
@@ -781,8 +816,23 @@
                $('#time4').timepicker('option','maxTime', timerange[timerange.length-1]);
                $('#time3').timepicker('option','step', 1);
                $('#time4').timepicker('option','step',1);
-           }
 
+
+
+
+
+
+
+
+
+           }
+  /*      $(document).on('click','#hashtags',function(){
+            $('#time3').timepicker('option','step', 1);
+            $('#time4').timepicker('option','step',1);
+
+
+
+        });*/
       $('#time3').on('changeTime',function(){
          //   $('#time3').timepicker('setTime',$(this).val);
             $('#time3').timepicker('setTime',($('#time3').val()));
@@ -803,7 +853,7 @@
             }
             if(timeflag){
                 newCanvas(s);
-            }
+            }//  alert(sigInst.getNodesCount());
 
             $('#ndslider').slider("option","value",0);
             $( "#ndamount" ).val(  $( "#ndslider" ).slider( "value" ) );
@@ -821,6 +871,8 @@
                     nds.push({id: n.id,density:n.size, size: n.size,label: n.label});
                 }
             });
+            //   alert(JSON.stringify(nds));
+            //    a=sortTemporalNodes(nodes);
             $("#ndslider").slider("option","max",counter);
             vMap=getTemporalEdgesArray();
             $('#edslider').slider("option","max",vMap.length-1);
@@ -853,6 +905,7 @@
             $( "#edamount" ).val(  $( "#edslider" ).slider( "value" ) );
             var s='n';
             var flag;
+            //  alert();
             var  a=sortTemporalNodes(nds);
             var ar= [];
             var neighbors = {};
@@ -903,10 +956,13 @@
         function temporalUnfiltered(v1,v2){
             var neighbors={};
             var arEd=[];
+            //   var v1=document.getElementById('time3').value;
+            //   var v2=document.getElementById('time4').value;
             if(v1<v2){
                 sigInst.iterEdges(function(e){
 
                     var time=e.attr['attributes'][1].val;
+                    //    alert(time);
                     if (!(v1<=time && v2>=time)){
                         e['before']= e.hidden;
                         e.hidden=1;
@@ -937,6 +993,7 @@
             var n=sigInst.getNodes(id);
             var o=n.attr['attributes'][2].val[0];
             if(o!=null){
+                //   alert(n.label);
                 for(var i=0;i< n.attr['attributes'][2].val.length;i++){
                     rtws.push(n.attr['attributes'][2].val[i].rtw);/// _id gia ta ids
                 }
@@ -951,6 +1008,7 @@
         var coloredNodeId=[];
 
         function retweeting(num){
+            //  alert(num);
             if(coloredNodeId.length>0){
                 sigInst.iterNodes(function(n){
                     coloredNodeId.map(function(m){
@@ -968,14 +1026,21 @@
             var flag=false;
             sigInst.iterNodes(function(n){
                 var    ar=getRetweetsPerNode(n.id);
+                //  alert(n.label+ "has"+ar+"retweets" );
+
+
                 if (ar!==0){
 
                     for(var i=0;i<ar.length;i++){
                         if(num==ar[i]){
+
+                            //   if(ar.indexOf(num)!=-1){
+                            //  alert(n.label);
                             var color='#f00';
                             if(!n.attr['c']){
                                 n.attr['true_color'] = n.color;
                                 n.color = color;
+                                //  alert(n.label);
                                 n.attr['c'] = 1;
                                 flag=true;
                                 coloredNodeId.push(n.id);
@@ -1022,8 +1087,10 @@
             }
 
             tcoloredNodeId=[];
+            //  alert(coloredNodeId.length);
             var s='rt';
             var flag=false;
+            //    sigInst.draw(2,2,2);
             sigInst.iterNodes(function(n){
                 if(!n.hidden){
                     var ar=[];
@@ -1057,6 +1124,7 @@
             }
 
             sigInst.iterNodes(function(n){
+                //   n.attr['true_color']=nc;
                 n.color = n.attr['c'] ?  n.attr['true_color'] : n.color;
                 n.attr['c'] = 0;
 
@@ -1221,6 +1289,7 @@
         $(document).on('click','.filterin',function(){
 
             var n=$(this).attr('id');
+            //    alert(n);
             filters.map(function (f){
                 f.map(function(fi){
                     if (n===fi.name){
@@ -1258,6 +1327,8 @@
                                 $('#filterdialog').html(" <p id='dial' align='center'> No Filters Selected </p> " );
                             }
                         }
+
+                        //     alert(JSON.stringify({{ metadata.d|json_encode|raw }}));
                         $('#rtf').html("Retweets:"+ret);
                         $('#tf').html("From:"+t1+"to:"+t2);
                         $('#nf').html("Nodes:"+node);
@@ -1284,6 +1355,7 @@
                 autoOpen: true,
                 buttons: {
                     'Reconstruct': function(){
+                    //    alert(n);
                         reconstructGraph(n);
                         submit=true;
                         $(this).dialog('close');
@@ -1353,6 +1425,7 @@
                                     }
                                     if(fi.retweets!=0){
                                         tcoloredNodeId=[];
+                                        //    alert(fi.retweets);
                                         temporalRetweeting(fi.retweets);
                                     }
                                     else{
@@ -1365,6 +1438,7 @@
                 });
             }
             sigInst.draw(2,2,2);
+            /// midenizw sliders
             $('#ndslider').slider("option","value",0);
             $( "#ndamount" ).val(  $( "#ndslider" ).slider( "value" ) );
             $('#edslider').slider("option","value",0);

@@ -42,7 +42,7 @@ class EdgesRepository extends EntityRepository
 
 
         $qb=$this->createQueryBuilder('es')
-            ->select('es.source','es.target','es.id','es.label','es.weight','es.timesta','es.retweetCount','es.rtw_id')
+            ->select('es.source','es.target','es.id','es.label','es.weight','es.timesta','es.retweetCount','es.rtw_id') /////// ftiaksimo opws panw!!!!
             ->where('es.source In (:nodes)')
             ->andWhere('es.target In (:nodes)')
             ->setParameter('nodes',$sb);
