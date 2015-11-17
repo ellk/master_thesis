@@ -1,0 +1,608 @@
+{# src/Viz/DataVizBundle/Resources/views/Page/pag.html.twig #}
+{% extends 'VizDataVizBundle::layout.html.twig' %}
+
+{% block body %}
+    //edw prepei na parw to nodes apo ton controller kai na ta valw sth javascript logika dne 8a exei provlima gt exei klironomi8ei
+    console.log("elllo");
+
+
+
+{% endblock %}
+ {% if form is defined %}
+     {% form_theme form '::base.html.twig' %}
+ {% endif %}
+
+  {% block stylesheets %}
+      {{ parent() }}
+  {% endblock %}
+
+
+{% endif %}
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+
+    (function(){
+        var wer={{metadata.flag|raw}};
+        if(wer==22){
+            document.getElementById('c').hidden=false;
+            document.getElementById('time').hidden=false;
+            document.getElementById('e').hidden=false;
+        }
+
+    })();
+    function init() {
+        var sigInst = sigma.init($('#sigma-example')[0]).drawingProperties({
+            defaultLabelColor: '#000',
+            edgeColor: 'target',
+            defaultEdgeType: 'line'
+        }).graphProperties({
+                    minNodeSize: 4,
+                    maxNodeSize: 10,
+                    minEdgeSize: 1,
+                    maxEdgeSize: 5,
+                    scalingMode: 'inside'
+                });
+        var greyColor = '#fff';
+        sigInst.parseJson({{ metadata|json_encode|raw }});
+
+        sigInst.draw();
+        sigInst.draw(2,2,2);
+
+
+        $( "#ndslider" ).slider({
+            value:0,
+            min: 0,
+            max: sigInst.getNodesCount(),
+            step: 1,
+            slide: function( event, ui ) {
+                $( "#ndamount" ).val(  [ui.value] );
+                filterClusterByNodes([ui.value]);
+            }
+        });
+        $( "#ndamount" ).val(  $( "#ndslider" ).slider( "value" ) );
+        var edgeArray=getEdgesArray();
+
+        $( "#edslider" ).slider({
+            value:0,
+            min: 0,
+            max: getEdgesArray().length-1,
+            step: 1,
+            slide: function( event, ui ) {
+                $( "#edamount" ).val(  edgeArray[ui.value] );
+                filterClusterByEdges(edgeArray[ui.value]);
+            }
+        });
+        $( "#edamount" ).val(  $( "#edslider" ).slider( "value" ) );
+
+        sigInst.bind('overnodes',function(event){
+            var nodes = event.content;
+            var neighbors = {};
+            sigInst.iterEdges(function(e){
+                if(nodes.indexOf(e.source)<0 && nodes.indexOf(e.target)<0){
+                    if(!e.attr['grey']){
+                        e.attr['true_color'] = e.color;
+                        e.color = greyColor;
+                        e.attr['grey'] = 1;
+                    }
+                }else{
+                    e.color = e.attr['grey'] ? e.attr['true_color'] : e.color;
+                    e.attr['grey'] = 0;
+                    neighbors[e.source] = 1;
+                    neighbors[e.target] = 1;
+                }
+            }).iterNodes(function(n){
+                        if(!neighbors[n.id]){
+                            if(!n.attr['grey']){
+                                n.attr['true_color'] = n.color;
+                                n.color = greyColor;
+                                n.attr['grey'] = 1;
+                            }
+                        }else{
+                            n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
+                            n.attr['grey'] = 0;
+                        }
+                    }).draw(2,2,2);
+        }).bind('outnodes',function(){
+                    sigInst.iterEdges(function(e){
+                        e.color = e.attr['grey'] ? e.attr['true_color'] : e.color;
+                        e.attr['grey'] = 0;
+                    }).iterNodes(function(n){
+                                n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
+                                n.attr['grey'] = 0;
+                            }).draw(2,2,2);
+                });
+        sigInst.draw();
+        (function(){
+            var popUp;
+            function attributesToString(attr) {
+                return '<ul>' +
+                        attr.map(function(o){
+                            while(o.attr!='retweets'){
+                                return '<li>' + o.attr + ' : ' + o.val + '</li>';
+                            }
+                        }).join('') +
+                        '</ul>';
+            }
+            function showNodeInfo(event) {
+                popUp && popUp.remove();
+                var node;
+                sigInst.iterNodes(function(n){
+                    node = n;
+                },[event.content[0]]);
+                popUp = $(
+                        '<div class="node-info-popup"></div>').append(
+                                attributesToString( node['attr']['attributes'] )
+                        ).attr(
+                                'id',
+                                'node-info'+sigInst.getID()
+                        ).css({
+                            'display': 'inline-block',
+                            'border-radius': 3,
+                            'padding': 5,
+                            'background': '#fff',
+                            'color': '#000',
+                            'box-shadow': '0 0 4px #666',
+                            'position': 'absolute',
+                            'left': node.displayX,
+                            'top': node.displayY+15
+                        });
+
+                $('ul',popUp).css('margin','0 0 0 20px');
+                $('#sigma-example').append(popUp);
+            }
+            function hideNodeInfo(event) {
+                popUp && popUp.remove();
+                popUp = false;
+            }
+            sigInst.bind('overnodes',showNodeInfo).bind('outnodes',hideNodeInfo).bind('downnodes',hideNodeInfo).draw();
+            sigInst.bind('downnodes',onClick);
+            sigInst.draw();
+        })();
+        function onClick(downnodes){
+            if(running){
+                sigInst.stopForceAtlas2();
+                sigInst.draw();
+            }
+            sigInst.iterNodes(function(n){
+                var id= n.id;
+                var data={id: n.id};
+                $.ajax({
+                    type: "POST",
+                    url: "{{ path('VizDataVizBundle_commShow')}}",
+                    data: {id: id},
+                    dataType:'json',
+                    success: function(response) {
+                        sigInst.emptyGraph();
+                        sigInst.parseJson(response);
+                        sigInst.draw(2,2,2);
+                        var valMap=getRetwArray();
+
+                        $( "#rtslider" ).slider({
+                            value:0,
+                            min: 0,
+                            max: valMap.length-1,
+                            step: 1,
+                            slide: function( event, ui ) {
+                                $( "#rtamount" ).val(  valMap[ui.value] );
+                                retweeting(valMap[ui.value]);
+                            }
+                        });
+                        $( "#rtamount" ).val(  $( "#rtslider" ).slider( "value" ) );
+                        $("#ndslider").slider("option","max",sigInst.getNodesCount());
+                        var valMap2=getEdgesArray();
+                        $('#edslider').slider("option","max",valMap2.length-1);
+                        $('#edslider').slider("option","slide",function(event, ui) {
+                            $( "#edamount" ).val(  valMap2[ui.value] );
+                            filterClusterByEdges(valMap2[ui.value]);
+                        });
+                        $( "#edamount" ).val(  $( "#edslider" ).slider( "value" ) );
+                        var s='cl';
+                        document.getElementById('c').hidden=false;
+                        document.getElementById('time').hidden=false;
+                        document.getElementById('e').hidden=false;
+                        sigInst.draw(2,2,2);
+                        newCanvas(s);
+                        function goToProfile(downnodes){
+                            sigInst.iterNodes(function(no){
+                                var href="https://twitter.com/"+no.label;
+                                window.open(href);
+                                sigInst.draw(2,2,2);
+                            },downnodes.content[0]);
+                        }
+                        sigInst.bind('downnodes',goToProfile);
+                    }
+                });
+            },[downnodes.content[0]]);
+        }
+        sigma.publicPrototype.myCircularLayout = function() {
+            var R = 100,
+                    i = 0,
+                    L = this.getNodesCount();
+
+            this.iterNodes(function(n){
+                n.x = Math.cos(Math.PI*(i++)/L)*R;
+                n.y = Math.sin(Math.PI*(i++)/L)*R;
+            });
+
+            return this.position(0,0,1).draw();
+        };
+        sigInst.bind('downnodes',onClick);
+        sigInst.draw();
+
+        function getRetwArray(){   /// ex getMaxRetwCount()
+            var  ar=[];
+            sigInst.iterNodes(function(n){
+                var o=n.attr['attributes'][2].val[0];
+                var m=0;
+                if(o!=null){
+                    for(var i=0;i< n.attr['attributes'][2].val.length;i++){
+                        ar.push(n.attr['attributes'][2].val[i].rtw);
+                    }
+                }
+            });
+            ar.sort(function(a,b){return a-b});
+            ar = ar.filter( function( item, index, inputArray ) {
+                return inputArray.indexOf(item) == index;
+            });
+
+            return ar;
+        }
+
+        function findNeighbors(id){
+            var neighbors=[];
+            sigInst.iterEdges(function(e){
+                if(id== e.source){
+                    neighbors.push(e.target);
+                }
+                else if (id== e.target){
+                    neighbors.push(e.source);
+                }
+            });
+            return neighbors.length;
+        }
+
+        function getMaxRetwCount(){
+            var  max=0;
+            sigInst.iterNodes(function(n){
+                var o=n.attr['attributes'][2].val[0];
+                var m=0;
+                if(o!=null){
+                    for(var i=0;i< n.attr['attributes'][2].val.length;i++){
+                        if(n.attr['attributes'][2].val[i].rtw>m){
+                            m= n.attr['attributes'][2].val[i].rtw;
+                        }
+                    }
+                    if(max<m){
+                        max=m;
+                    }
+                    m=0;
+                }
+            });
+            return max;
+        }
+
+        function getMaxDegree(){
+            var max=0
+            sigInst.iterNodes(function(n){
+                if(n.size>max){
+                    max= n.size;
+                }
+            });
+            return max;
+        }
+
+        function sortNodes(){
+            var newArray= [];
+            sigInst.iterNodes(function(n){
+                if(n.attr['attributes'][2]){
+                    newArray.push({id: n.id, size: n.size,density:  n.attr['attributes'][2].val, flag:0});
+                }else{
+                    newArray.push({id: n.id, size: n.size,density: n.size  ,flag:0});
+                }
+            });
+            var swapped;
+            do {
+                swapped = false;
+                for (var i = 0; i < newArray.length - 1; i++) {
+                    if (newArray[i].size < newArray[i + 1].size) {
+                        var temp = newArray[i];
+                        newArray[i] = newArray[i + 1];
+                        newArray[i + 1] = temp;
+                        swapped = true;
+                    }
+                }
+            } while (swapped);
+
+            for ( i = 0; i < newArray.length - 1; i++) {
+                for ( var j = 0; j < newArray.length - 1; j++){
+                    if(newArray[i].size===newArray[j].size && newArray[j].flag!=1){
+                        if(newArray[i].density<newArray[j].density){
+                            temp=newArray[i];
+                            newArray[i]=newArray[j];
+                            newArray[j]=temp;
+                            newArray[i].flag=1;
+                            newArray[j].flag=1;
+                        }
+                    }
+                }
+            }
+            return newArray;
+        }
+
+        var resc=false;
+        $('#circular').click(function() {
+            if(!resc){
+                sigInst.myCircularLayout();
+                resc=true;
+
+                $('#circular').val('rescale');
+                sigInst.draw(2,2,2);
+                newCanvas('circ');
+            }
+            else{
+                sigInst.iterNodes(function(n){
+                    n.x = Math.random();
+                    n.y =Math.random();
+                });
+                sigInst.draw(2,2,2);
+                resc=false;
+                $('#circular').val('circle');
+                newCanvas('circ');
+            }
+        });
+
+        var fish=false;
+        $('#fisheye').click(function(){
+            if(!fish){
+                sigInst.activateFishEye().draw();
+                $('#fisheye').val('Stop fisheye');
+                fish=true;
+            }
+            else{
+                sigInst.desactivateFishEye().draw();
+                fish=false;
+                $('#fisheye').val('Start fisheye');            }
+        });
+        var running=false;
+        $('#force-atlas').click(function(){
+            if(!running){
+                running=true;
+                sigInst.startForceAtlas2();
+                $('#force-atlas').val('Stop force atlas');
+                newCanvas('forced');
+            }
+            else{
+                running=false;
+                sigInst.stopForceAtlas2();
+                $('#force-atlas').val('Start force atlas');
+                sigInst.draw(2,2,2);
+                newCanvas('forced');
+
+            }
+        });
+        (function(){
+
+            var v=$('#force-atlas').val();
+            if(!running){
+                if(v=='Stop random'){
+                    document.getElementById('force-atlas').childNodes[0].nodeValue ='Start random ';
+
+                }
+            }
+        })();
+
+        function getEdgesArray(){     /// neighbors sto metagrafo
+            var ar=[];
+            sigInst.iterNodes(function(n){
+                var neigh=findNeighbors(n.id);
+                ar.push(neigh);
+            });
+            ar.sort(function(a,b){return a-b});
+            ar = ar.filter( function( item, index, inputArray ) {
+                return inputArray.indexOf(item) == index;
+            });
+
+            return ar;
+        }
+        function   filterClusterByEdges(edgeNum){
+            sigInst.draw(2,2,2);
+            var s='e';
+            var flag=false;
+            var neighbors = {};
+            sigInst.iterEdges(function(e){
+                if (sigInst.getNodes(e.source).size %1===0){ //vlepw an eimai sto metagrafo i se mesa sto cluster
+                    var id1=sigInst.getNodes(e.source).id;
+                    var size1=findNeighbors(id1);
+                    var  id2=sigInst.getNodes(e.target).id;
+                    var size2=findNeighbors(id2);
+                    if(edgeNum==size1){
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                        flag=true;
+                    }
+                    else if(edgeNum==size2){
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                        flag=true;
+                    }
+                }
+                else{
+                    if(edgeNum==sigInst.getNodes(e.source).size){
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                        flag=true;
+                    }
+                    else if( edgeNum==sigInst.getNodes(e.target).size){
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                        flag=true;
+                    }
+                }
+            })
+                    .iterNodes(function(n){
+                        if(!neighbors[n.id]){
+                            n.hidden = 1;
+                        }else{
+                            n.hidden = 0;
+                        }
+
+                    }).draw(2,2,2);
+
+            if (flag){
+                newCanvas(s);
+                flag=false;
+            }
+        }
+        function filterClusterByNodes(nodeNum){
+            var s='n';
+            var flag;
+            //  var nodeNum=this.value;
+            var a=[];
+            a=sortNodes();
+            var ar= [];
+            var neighbors = {};
+            for(var i=0;i<nodeNum;i++){
+                ar.push(a[i].id);
+            }
+            sigInst.iterEdges(function(e){
+                var flag=false;
+                if(ar.indexOf(e.source)<0 && ar.indexOf(e.target)<0){
+                    e.hidden=1;
+                    neighbors[e.source]=1;
+                    neighbors[e.target]=1;
+                }
+                else if(ar.indexOf(e.source)<0){
+                    neighbors[e.source]=1;
+                }
+                else if(ar.indexOf(e.target)<0){
+                    neighbors[e.target]=1;
+                }
+            }).iterNodes(function(n){
+                        if(!neighbors[n.id]){
+                            n.hidden =0;
+                        }
+                        else{
+                            n.hidden = 1;
+                        }
+                    }
+            ).draw(2,2,2);
+
+            newCanvas(s);
+        }
+        $('#time4').on('changeTime', function() {
+            var s='t';
+            var v1=document.getElementById('time3').value;
+            var v2=document.getElementById('time4').value;
+
+            var neighbors={};
+            if(v1<v2){
+                sigInst.iterEdges(function(e){
+                    var time=e.attr['attributes'][1].val;
+                    if (v1<=time && v2>=time){
+                        neighbors[e.source]=1;
+                        neighbors[e.target]=1;
+                    }
+                })
+                        .iterNodes(function(n){
+                            if(!neighbors[n.id]){
+                                n.hidden =1;
+                            }
+                            else{
+                                n.hidden = 0;
+                            }
+                        })
+                        .draw(2,2,2);
+                newCanvas(s);
+            }
+            else {
+                $(this).removeClass("error");
+            }
+        });
+
+        function getRetweetsPerNode(id){
+            var rtws=[];
+            var n=sigInst.getNodes(id);
+            var o=n.attr['attributes'][2].val[0];
+            if(o!=null){
+                for(var i=0;i< n.attr['attributes'][2].val.length;i++){
+                    rtws.push(n.attr['attributes'][2].val[i].rtw);/// _id gia ta ids
+                }
+            }
+            else rtws=0;
+            return rtws;
+        }
+
+        function retweeting(num){
+            var s='rt';
+            var flag=false;
+            sigInst.draw(2,2,2);
+            sigInst.iterNodes(function(n){
+                var ar=[];
+                ar=getRetweetsPerNode(n.id);
+                if (ar!==0){
+                    if(ar.indexOf(num)>-1){
+                        var color='#f00';
+                        if(!n.attr['c']){
+                            n.attr['true_color'] = n.color;
+                            n.color = color;
+                            n.attr['c'] = 1;
+                            flag=true;
+                        }
+                    }
+                }
+            }).iterEdges(function(e){
+                        if(sigInst.getNodes(e.source).attr['c']==1){
+                            e.attr['true_color']= e.color;
+                            e.color=sigInst.getNodes(e.source).attr['true_color'];
+                        }
+                    }).draw(2,2,2);
+            if(flag){
+                newCanvas(s);
+                flag=false;
+            }
+            sigInst.iterNodes(function(n){
+                n.color = n.attr['c'] ? n.attr['true_color'] : n.color;
+                n.attr['c'] = 0;
+            }).iterEdges(function(e){
+                        e.color= e.attr['true_color'];
+                    });
+            sigInst.edgeColor='target';
+        }
+
+        $('#colorNodes').on('change', function() {
+            var s='cn';
+            var color=this.value;
+            sigInst.iterNodes(function(n){
+                n.color=color;
+            });
+            sigInst.draw(2,2,2);
+            newCanvas(s);
+
+        });
+        $('#colorEdges').on('change', function() {
+            var s='ce';
+            var color=this.value;
+            sigInst.iterEdges(function(e){
+                e.color=color;
+            });
+            sigInst.draw(2,2,2);
+            newCanvas(s);
+        });
+        document.getElementById('refresh').addEventListener('click',
+                function(){
+                    sigInst.iterNodes(function(n){
+                        n.hidden=false;
+                    }).draw(2,2,2);
+                }
+                ,true);
+        sigInst.draw();
+    }
+
+    if (document.addEventListener) {
+        document.addEventListener("DOMContentLoaded", init, false);
+    } else {
+        window.onload = init;
+    }
+    </script>
+{% endblock %}

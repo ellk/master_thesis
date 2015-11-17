@@ -1,0 +1,7 @@
+parameters:
+#    viz_data_viz.example.class: Viz\DataVizBundle\Example
+
+services:
+#    viz_data_viz.example:
+#        class: %viz_data_viz.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]

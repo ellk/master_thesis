@@ -1,0 +1,197 @@
+<?php
+
+//src/Viz/DataVizBundle/Entity/EdgesByFilter.php
+
+namespace Viz\DataVizBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass="Viz\DataVizBundle\Entity\Repository\EdgesByFilterRepository")
+ * @ORM\Table(name="edgem")
+ * @ORM\HasLifecycleCallbacks()
+ */
+class EdgesByFilter{
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="bigint")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+
+
+    protected $id;
+    /**
+     * @ORM\Column(type="bigint")
+     */
+    protected $source;
+    /**
+     * @ORM\Column(type="bigint")
+     */
+    protected $target;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $text;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $label;
+    /**
+     * @ORM\Column(type="bigint")
+     */
+    protected $tw_id;
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $t_stmp;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set source
+     *
+     * @param integer $source
+     * @return EdgesByFilter
+     */
+    public function setSource($source)
+    {
+        $this->source = $source;
+    
+        return $this;
+    }
+
+    /**
+     * Get source
+     *
+     * @return integer 
+     */
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * Set target
+     *
+     * @param integer $target
+     * @return EdgesByFilter
+     */
+    public function setTarget($target)
+    {
+        $this->target = $target;
+    
+        return $this;
+    }
+
+    /**
+     * Get target
+     *
+     * @return integer 
+     */
+    public function getTarget()
+    {
+        return $this->target;
+    }
+
+    /**
+     * Set text
+     *
+     * @param string $text
+     * @return EdgesByFilter
+     */
+    public function setText($text)
+    {
+        $this->text = $text;
+    
+        return $this;
+    }
+
+    /**
+     * Get text
+     *
+     * @return string 
+     */
+    public function getText()
+    {
+        return $this->text;
+    }
+
+    /**
+     * Set label
+     *
+     * @param string $label
+     * @return EdgesByFilter
+     */
+    public function setLabel($label)
+    {
+        $this->label = $label;
+    
+        return $this;
+    }
+
+    /**
+     * Get label
+     *
+     * @return string 
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
+     * Set tw_id
+     *
+     * @param integer $twId
+     * @return EdgesByFilter
+     */
+    public function setTwId($twId)
+    {
+        $this->tw_id = $twId;
+    
+        return $this;
+    }
+
+    /**
+     * Get tw_id
+     *
+     * @return integer 
+     */
+    public function getTwId()
+    {
+        return $this->tw_id;
+    }
+
+    /**
+     * Set t_stmp
+     *
+     * @param \DateTime $tStmp
+     * @return EdgesByFilter
+     */
+    public function setTStmp($tStmp)
+    {
+        $this->t_stmp = $tStmp;
+    
+        return $this;
+    }
+
+    /**
+     * Get t_stmp
+     *
+     * @return \DateTime 
+     */
+    public function getTStmp()
+    {
+        return $this->t_stmp;
+    }
+}

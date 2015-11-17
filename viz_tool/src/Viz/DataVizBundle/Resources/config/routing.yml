@@ -1,0 +1,27 @@
+# src/Viz/DataVizBundle/Resources/config/routing.yml
+
+VizDataVizBundle_homepage:
+    pattern: /
+    defaults: { _controller: VizDataVizBundle:Page:index }
+    requirements:
+        _method:    GET|POST
+
+
+VizDataVizBundle_commShow:
+  pattern: /onClick
+  defaults: { _controller: VizDataVizBundle:Page:community }
+  requirements:
+         _method:   POST
+
+
+
+
+
+
+hashtag:
+    pattern:  /hashtag
+    defaults: { _controller: VizDataVizBundle:Page:hashtag }
+    requirements:
+        _method:    GET
+
+

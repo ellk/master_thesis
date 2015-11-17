@@ -1,0 +1,374 @@
+<!-- app/Resources/views/base.html.twig -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width" name="viewport">
+    <title>{% block title %}Social Network Visualization{% endblock %}</title>
+
+    {% block stylesheets %}
+        <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+        <link href="{{ asset('css/bootstrap-responsive.min.css') }}" type="text/css" rel="stylesheet" />
+        <link href="{{ asset('css/bootstrap.min.css') }}" type="text/css" rel="stylesheet" />
+        <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+        <link href="{{ asset('css/screen.css') }}" type="text/css" rel="stylesheet" />
+        <link href="{{ asset('css/prettify.css') }}" type="text/css" rel="stylesheet" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <link rel='stylesheet' href={{asset('spectrum/spectrum.css')}} />
+        <link rel='stylesheet' href={{asset('js/jquery-window-5.03/css/jquery.window.css')}} />
+
+    {% endblock %}
+
+    <script type="text/javascript"     src="//code.jquery.com/jquery-latest.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.js"></script>
+    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script type="text/javascript" async src="http://www.google-analytics.com/ga.js"></script>
+    <script src="{{ asset('prettify.js') }}"></script>
+    <script type="text/javascript" src="{{asset('jquery-timepicker-master/jquery.timepicker.min.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/jquery-window-5.03/jquery.window.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+</head>
+<body onload="prettyPrint(); ">
+
+
+
+        {% block navigation %}
+            <nav>
+                <ul class="menu">
+                    <li class="menuItem"><a href='#'>Load</a>
+                        <ul class="submenu">
+
+                            <li class="submenuItem"><a href="{{ path('VizDataVizBundle_homepage')}}">connect to database</a></li>
+                            <div id="ldf" hidden="true">
+                                <li class="submenuItem" id="list"><a href="#" >load filtered graph</a>
+                                    <ol  id="filterlist" class="filtering">
+                                        <div id="filterdialog" style="display:none;">
+                                        </div>
+
+                                    </ol>
+                                </li>
+                            </div>
+                        </ul>
+                    </li>
+                    <li class="menuItem"><a href="#" class="links">View</a>
+                        <ul class="submenu">
+                            <li class="submenuItem">
+                                <input type="button" class="myButton" id="fisheye" value="start fisheye">
+                            </li>
+                            <li class="submenuItem">
+                                <input type="button" class="myButton" id="force-atlas" value="start force atlas">
+                            </li>
+                            <li class="submenuItem">
+                                <input type="button" class="myButton" id="circular" value="circular">
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menuItem"><a href="#" class="links">Filter</a>
+                        <ul class="submenu">
+                            <div id="e" hidden="true">
+                                <li class="menuItem"><a href="#" class="links">Visualize by </a>
+                                    <ul class="submenu">
+                                        <li class="submenuItem" id="hashtags">
+                                            <ul>
+                                                <form action="{{ path('VizDataVizBundle_homepage')}}" method="post" {{ form_enctype(form) }} class="viz">
+                                                    {{ form_row(form.hashtags) }}
+                                                    {{ form_errors(form.hashtags) }}
+                                                    {{ form_rest(form) }}
+                                                    <input type="submit" value="Submit"/>
+                                                </form>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </div>
+                            <div id="c"  hidden="true">
+                                <li class="submenuItem"><a href="#" class="links">most retweeted</a>
+                                    <div id="rtslider" class="ui-slider-handle"></div>
+                                    <p>
+                                        <input class="texts" type="text" id="rtamount">
+                                    </p>
+                                </li>
+                            </div>
+                            <li class="submenuItem"><a href="#" class="links">number of nodes</a>
+                                <div id="ndslider" class="ui-slider-handle"></div>
+                                <p>
+                                    <input class="texts" type="text" id="ndamount">
+                                </p>
+                            </li>
+                            <li class="submenuItem"><a href="#" class="links">number of edges</a>
+                                <div id="edslider" class="ui-slider-handle"></div>
+                                <p>
+                                    <input class="texts" type="text" id="edamount">
+                                </p>
+                            </li>
+                            <li class="submenuItem"><a href="#" class="links"></a>
+                                <ul><div id="buttons">
+                                        <input class="myButton" id="refresh" type="button" value="refresh" >
+                                        <input class="myButton" id="export" type="button" value="export" onClick="giveName();">
+
+                                        <div id="confirm" style="display:none;">
+                                            <input type="text" id="filtername"></div>
+                                        <div id="filt" style="display:none;">
+                                            <input type="text" id="filtt"></div>
+                                    </div>
+                                </ul>
+                            </li>
+                            <div id="time" hidden="true">
+                                <li class="submenuItem"><a href="#" class="links">time</a>
+                                    <input id="time3" type="text"  autocomplete="off"  /><span id="timeRange"></span>
+                                    <input id="time4" type="text"  autocomplete="off">
+
+                                </li>
+                            </div>
+                        </ul>
+                    </li>
+
+                    <li class="menuItem"><a href="#" class="links">Edit</a>
+                        <ul class="submenu">
+                            <li class="submenuItem"><a href="#" class="links">nodes</a>
+                                <input type="text" id="colorNodes">
+                            </li>
+                            <li class="submenuItem"><a href="#" class="links">edges</a>
+                                <input type="text" id="colorEdges">
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        {% endblock %}
+   
+
+
+<section id="main">
+<canvas  id=canvas style="position: relative;"></canvas>
+
+
+<div class="sigma-parent" id="sigma-example-parent">
+
+    <div class="sigma-expand" id="sigma-example">
+        <canvas id="buffer" width=800 height=600 style='width:800px;height:600px;'></canvas>
+        <canvas id="b" style="position: relative;"  style="dipslay:none"></canvas>
+    </div>
+</div>
+
+<br>
+{% block body %}qwertty{% endblock %}
+{% block javascripts %}
+
+    <script type="text/javascript" src="{{asset('js/sigma.min.js')}}"></script>
+    <script type="text/javascript" src="{{asset('sigma.js-master/plugins/sigma.forceatlas2.js')}}"></script>
+    <script type="text/javascript" src="{{asset('sigma.js-master/plugins/sigma.fisheye.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/sigma.parseJson.js')}}"></script>
+    <script type="text/javascript" async src={{asset('http://www.google-analytics.com/ga.js')}}></script>
+    <script src="{{asset('prettify.js')}}"></script>
+    <script type="text/javascript" src={{asset('spectrum/spectrum.js')}}></script>
+
+    <script type="text/javascript">
+        $(function(){
+            var filtersArray=[];
+            var jsonArray={};
+
+
+            $('#colorNodes,#colorEdges').spectrum({clickoutFiresChange: true,
+                preferredFormat: "hex",
+                showInput: true});
+
+            $('#time3,#time4').timepicker({
+                'scrollDefaultNow': true,
+                'useSelect': true,
+                'step':1,
+                'timeFormat': 'H:i:s',
+                hour: '00',
+                minute : '00',
+                sec: '00'
+
+
+            });
+
+        });
+        function giveName(){
+
+            $("#confirm").dialog({  resizable: false,
+                height: 180,
+                modal: true,
+                title: 'Save graph',
+                autoOpen: true,
+                buttons: {
+                    'Submit': function() {
+                        var suffix=".png";
+                        var name=$('#filtername').val()
+
+                        $('#filtername').val('');
+                        //     name=name.concat(suffix);
+
+                        download(buffer,name);
+                        submit=true;
+                        $(this).dialog('close');
+
+
+                    },
+                    'Cancel': function() {
+                        $("#filtername").val('');
+                        $(this).dialog('close');
+                    }
+                }
+            });
+
+
+
+        }
+
+        function download(canvas, filename) {
+            //   alert(filename);
+            var lnk = document.createElement('a'),
+                    e;
+            lnk.download = filename;
+            // alert(filename);
+            lnk.href = canvas.toDataURL();
+
+            if (document.createEvent) {
+                e = document.createEvent("MouseEvents");
+                e.initMouseEvent("click", true, true, window,
+                        0, 0, 0, 0, 0, false, false, false,
+                        false, 0, null);
+
+                lnk.dispatchEvent(e);
+
+            } else if (lnk.fireEvent) {
+
+                lnk.fireEvent("onclick");
+            }
+
+        }
+
+        function newCanvas(s){
+            var msg;
+            switch(s)
+            {
+                case "n":
+                    msg="node filtering";
+                    break;
+                case "e":
+                    msg="edge filtering";
+                    break;
+                case "rt":
+                    msg="most retweeted nodes";
+                    break;
+                case "cl":
+                    msg="cluster";
+                    break;
+                case "t":
+                    msg="time filtering";
+                    break;
+                case "22":
+                    msg="hashtag filtering";
+                    break;
+                case "cn":
+                    msg="colored nodes";
+                    break;
+                case "ce":
+                    msg="colored edges";
+                    break;
+                case "11":
+                    msg="meta-graph";
+                    break;
+                case "circ":
+                    msg="circular layout";
+                    break;
+                case "forced":
+                    msg="force-atlas2 layout";
+                    break;
+                case "filter":
+                    msg="filter";
+                    break;
+                case "rand":
+                    msg="random layout";
+                    break;
+                default:
+                    msg="";
+
+            }
+
+            var target=document.getElementById('buffer');
+
+      //      alert(target.width);
+            target.width=target.width;
+            var t_con=target.getContext("2d");
+            setTimeout(function(){t_con.drawImage(sigma_nodes_1,0,0);
+                t_con.drawImage(sigma_edges_1,0,0);
+                t_con.drawImage(sigma_labels_1,0,0);
+
+
+
+                //        t_con.drawImage(sigma_nodes_1,0,0);
+                //         t_con.drawImage(sigma_edges_1,0,0);
+                //        t_con.drawImage(sigma_labels_1,0,0);
+
+                /*      var buf=document.getElementById('b');
+                 var tc=b.getContext("2d");
+                 tc.drawImage(sigma_nodes_1,0,0);
+                 tc.drawImage(sigma_edges_1, 0, 0);
+                 tc.drawImage(sigma_labels_1,0,0);*/
+
+                var buffer_img = new Image();
+                buffer_img.src = target.toDataURL();
+                //    fillBuffer(buffer_img.src,msg);
+                var output = document.getElementById('output');
+                output.innerHTML = '<img src="' + buffer_img.src + '" alt="Canvas Image" /> ';
+                $.window.prepare({
+                    dock: 'bottom',       // change the dock direction: 'left', 'right', 'top', 'bottom'
+                    animationSpeed: 200,  // set animation speed
+                    minWinLong: 180       // set minimized window long dimension width in pixel
+                });
+                $.window({
+                    showModal: false,
+                    modalOpacity: 0.5,
+                    draggable: true,
+                    minimizable: true,
+                    maximizable:true,
+                    scrollable:true,
+                    checkBoundary: true,
+                    width: 200,
+                    height: 160,
+                    maxWidth: 900,
+                    maxHeight: 940,
+                    y: 580,
+                    x:0,
+                    title: msg,
+                    content: $("#output").html() // load window_block2 html content
+                });
+
+            } ,100);
+        }
+        function fillBuffer(str,st){
+            $('#b').html('');
+            document.getElementById('b').innerHTML= '<img src="' + str + '" alt="Canvas Image" /> st';
+        }
+        function clearBuffer(){
+
+            document.getElementById('b').html('');
+        }
+
+
+    </script>
+
+{% endblock %}
+<div id="output" style="display:none">Empty</div>
+
+<div id="out"></div>
+
+
+
+
+</section>
+<footer>
+    {% block footer %}
+        Visualizing Data From Social Networks
+    {% endblock %}
+</footer>
+</body>
+
+</html>

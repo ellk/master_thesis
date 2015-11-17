@@ -1,0 +1,4 @@
+viz_data_viz:
+    resource: "@VizDataVizBundle/Resources/config/routing.yml"
+    prefix:   /
+

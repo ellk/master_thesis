@@ -1,0 +1,38 @@
+<?php
+//src/Viz/DataVizBundle/Entity/DDMenu.php
+
+namespace Viz\DataVizBundle\Entity;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass="Viz\DataVizBundle\Entity\Repository\ClusterHashtagsRepository")
+ * @ORM\Table(name="cluster_hash")
+
+ */
+
+class DDMenu{
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $hashtags;
+
+
+    public function setHashtags($h)
+    {
+        $this->hashtags = $h;
+    }
+
+    public function getHashtags()
+    {
+        return $this->hashtags;
+    }
+
+
+
+
+
+
+
+
+
+}

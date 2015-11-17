@@ -1,0 +1,117 @@
+<?php
+
+// src/Viz/DataVizBundle/Entity/NodesByFilter.php
+
+namespace Viz\DataVizBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass="Viz\DataVizBundle\Entity\Repository\NodesByFilterRepository")
+ * @ORM\Table(name="nodes")
+ * @ORM\HasLifecycleCallbacks()
+ */
+class NodesByFilter{
+
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="integer", length=11)
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    protected $nid;
+
+    /**
+     * @ORM\Column(type="bigint")
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="bigint")
+     */
+
+    protected $tw_id;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    protected $label;
+
+    /**
+     * Get nid
+     *
+     * @return integer 
+     */
+    public function getNid()
+    {
+        return $this->nid;
+    }
+
+    /**
+     * Set id
+     *
+     * @param integer $id
+     * @return NodesByFilter
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    
+        return $this;
+    }
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set tw_id
+     *
+     * @param integer $twId
+     * @return NodesByFilter
+     */
+    public function setTwId($twId)
+    {
+        $this->tw_id = $twId;
+    
+        return $this;
+    }
+
+    /**
+     * Get tw_id
+     *
+     * @return integer 
+     */
+    public function getTwId()
+    {
+        return $this->tw_id;
+    }
+
+    /**
+     * Set label
+     *
+     * @param string $label
+     * @return NodesByFilter
+     */
+    public function setLabel($label)
+    {
+        $this->label = $label;
+    
+        return $this;
+    }
+
+    /**
+     * Get label
+     *
+     * @return string 
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+}
